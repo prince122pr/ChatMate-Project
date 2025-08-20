@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 
-let chatSchema = mongoose.Schema({
+let chatSchema = new mongoose.Schema({
    user:{
      type: mongoose.Schema.Types.ObjectId,
      ref: "User",

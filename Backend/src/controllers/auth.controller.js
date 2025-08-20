@@ -42,7 +42,7 @@ const loginController = async(req, res) => {
    let isValidPass = await bcrypt.compare(password, isUserExists.password);
    if(!isValidPass) return res.status(401).json({message: "Invalid Password!"});
 
-   let token = jwt.sign({id: isUserExists._id}, process.env.JWT_SECRET, { expiresIn: "7d" });
+   let token = jwt.sign({id: isUserExists._id}, process.env.JWT_SECRET_KEY, { expiresIn: "7d" });
    res.cookie("token", token);
 
    res.status(200).json({
