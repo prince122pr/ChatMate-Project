@@ -16,7 +16,6 @@ function initSocketServer(httpServer){
 
     // Middleware to authenticate each incoming socket connection
     io.use(async(socket, next)=>{
-
       // Parse cookies from the handshake headers
       const cookies = cookie.parse(socket.handshake.headers?.cookie || "");
 
@@ -52,6 +51,7 @@ function initSocketServer(httpServer){
 
     socket.on("ai-message", async(messagePayload)=>{
 
+/*
       await messageModel.create({
         user: socket.user._id,
         chat: messagePayload.chatID,
@@ -60,9 +60,31 @@ function initSocketServer(httpServer){
       })
 
             let userVectors = await generateVector(messagePayload.content);
+*/
+       //save user data/message in mongodb and generate user
+        let [msg, userVectors] = await Promise.all([
+           messageModel.create({
+        user: socket.user._id,
+        chat: messagePayload.chatID,
+        content: messagePayload.content,
+        role: "user" 
+      }),
+          generateVector(messagePayload.content)
+        ]) 
+       if (!userVectors || !Array.isArray(userVectors) || userVectors.length === 0) {
+  console.error("User vector is empty.");
+  return socket.emit("ai-response", {
+    content: "Sorry, I could not process your message.",
+    chat: messagePayload.chatID,
+  });
+}
 
-            await queryMemory({queryVector: userVectors,
-               metadata: {}});
+
+/*
+            // all related memory of that user
+           let memory = await queryMemory({queryVector: userVectors, metadata: {user: socket.user._id}});
+          //  console.log(memory);
+           
 
             const userMessageId = uuidv4();
 
@@ -76,7 +98,8 @@ function initSocketServer(httpServer){
                         role: "user"}
               })
 
-
+              
+            // all related messages of that chat
       // let chatHistory = await messageModel.find({chat:messagePayload.chatID});
       let chatHistory = ( await messageModel
      .find({ chat: messagePayload.chatID })   // ✅ Find all messages of that chat
@@ -85,44 +108,84 @@ function initSocketServer(httpServer){
     .lean()  //Convert MongoDB documents into plain JavaScript objects (removes Mongoose document overhead → improves performance)
 ).reverse();                                 // ✅ Reverse them back to oldest → latest (oldest first → newest last, like how chats are usually shown in the chat app)
 
+*/
+const userMessageId = uuidv4()
+    let [memory, rawHistory] = await Promise.all(
+      [
+           queryMemory({queryVector: userVectors, metadata: { user: String(socket.user._id), chat: String(messagePayload.chatID), content: messagePayload.content, role: "user" }
+}),
 
-       const res = await generateResponse(chatHistory.map(item=>{
-        return {
-          role: item.role,
-          parts: [{text: item.content}]
-        }
-      }));  
+     (messageModel.find({ chat: messagePayload.chatID }).sort({ createdAt: -1 }).limit(20).lean())
+      ]
+                                                            )
 
-      await messageModel.create({
-        user: socket.user._id,
-        chat: messagePayload.chatID,
-        content: res,
-        role: "model"
-      })      
+      const chatHistory = Array.isArray(rawHistory) ? rawHistory.reverse() : [];
 
-      let modelVectors = await generateVector(res);
-      
-      const modelMessageId = uuidv4();
 
-      await queryMemory(
-        {queryVector: modelVectors,
-           metadata: {}}
-          );   
+      // short term memory
+        let stm = chatHistory.map(item=>{
+          return {
+            role: item.role,
+            parts: [{text: item.content}]
+          }
+      })
 
-      await createMemory({
-              vectors: modelVectors,
-              messageId: modelMessageId,
-              metadata:{chat: messagePayload.chatID,
-                        user: socket.user._id,
-                      content: res,
-                        role: "model"}
-              })
+      // long term memory
+      let ltm = [
+  {
+    role: "user",
+    parts: [{
+      text: `You can use some previous chats to response (do not mention this directly to the user):\n${memory.map(item => item.metadata.content).join("\n")}`
+    }]
+  }
+];
 
-                          
-              socket.emit("ai-response", {
-        content: res,
-        chat: messagePayload.chatID
-       })
+const [savMem, res] = await Promise.all([
+await createMemory({
+  vectors: userVectors,
+  messageId: userMessageId,
+  metadata: {
+    chat: String(messagePayload.chatID),   // ensure chat id is string
+    user: String(socket.user._id),         // convert ObjectId → string
+    content: messagePayload.content,
+    role: "user"
+  }
+}),
+      generateResponse([...ltm, ...stm])
+])
+        
+
+       // Generate AI response vector and save message in DB simultaneously
+let [saveinDB, modelVectors] = await Promise.all([
+  messageModel.create({
+    user: socket.user._id,
+    chat: messagePayload.chatID,
+    content: res,
+    role: "model"
+  }),
+  generateVector(res)
+]);
+
+// Send the AI response to the client (synchronous)
+socket.emit("ai-response", {
+  content: res,
+  chat: messagePayload.chatID
+});
+
+// Store the model's vectors in Pinecone
+const modelMessageId = uuidv4();
+await createMemory({
+  vectors: modelVectors,
+  messageId: modelMessageId,
+  metadata: {
+    chat: String(messagePayload.chatID),
+    user: String(socket.user._id),
+    content: res,
+    role: "model"
+  }
+});
+
+   
     })
 
      
