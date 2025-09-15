@@ -1,33 +1,48 @@
-import axios from "axios"
+import axios from "axios";
 import { setUserData } from "../slices/userSlice";
 
+// Axios instance (optional but cleaner if you reuse baseURL everywhere)
+const API = axios.create({
+  baseURL: "http://localhost:8000/api",
+  withCredentials: true,
+});
 
-export const getCurrentUser = () => async(dispatch) => {
-    let res = await axios.get("http://localhost:8000/api/user/get-current-user", {withCredentials: true});
-    dispatch(setUserData(res.data.user))
-}
-
-export const createUser = (user) => async() => {
-    axios.post("http://localhost:8000/api/auth/register", {
-         fullname: {
-           firstname: user.firstName,
-           lastname: user.lastName,
-         },
-         email: user.email,
-         password: user.password,
-       },{withCredentials: true})
-} 
-
-export const logoutUser = () => async(dispatch) => {
-    try {
-      let res = await axios.get('http://localhost:8000/api/auth/logout', {withCredentials: true});
-      console.log(res);
-      dispatch(setUserData(null))
-      dispatch(getCurrentUser())
-      
-      return res
-    } catch (error) {
-      console.log(error);
-      
+// Get current user
+export const getCurrentUser = () => async (dispatch) => {
+  try {
+    const res = await API.get("/user/get-current-user");
+    if (res?.data?.user) {
+      dispatch(setUserData(res.data.user));
     }
-}
+  } catch (error) {
+    console.error("getCurrentUser error:", error.response?.data || error.message);
+    // If token expired or user not found → clear state
+    dispatch(setUserData(null));
+  }
+};
+
+// Register new user
+export const createUser = (user) => async () => {
+  try {
+     await API.post("/auth/register", {
+      fullname: {
+        firstname: user.firstName,
+        lastname: user.lastName,
+      },
+      email: user.email,
+      password: user.password,
+    });
+  } catch (error) {
+    console.error("createUser error:", error.response?.data || error.message);
+  }
+};
+
+// Logout user
+export const logoutUser = () => async (dispatch) => {
+  try {
+    await API.get("/auth/logout");
+    dispatch(setUserData(null));
+  } catch (error) {
+    console.error("logoutUser error:", error.response?.data || error.message);
+  }
+};

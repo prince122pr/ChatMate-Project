@@ -14,11 +14,11 @@ const App = () => {
 
     useEffect(() => {
     if(!isPublicRoute && !user) {dispatch(getCurrentUser())}
-  },[dispatch, user])
+  },[dispatch, user, isPublicRoute])
   
   return (
     <div className="w-full min-h-screen">
-       {!isPublicRoute && <Navbar />}
+       {!isPublicRoute && user  && <Navbar />}
       <MainRoutes/>
     </div>
   )
