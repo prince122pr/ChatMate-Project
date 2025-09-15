@@ -1,6 +1,6 @@
-const chatModel = require("../models/chat.model")
+import chatModel from "../models/chat.model.js";
 
-async function createChat(req, res){
+export async function createChat(req, res){
     let {_id} = req.user;
     let {title} = req.body
     
@@ -19,5 +19,3 @@ async function createChat(req, res){
     }
    });
 }
-
-module.exports = {createChat}

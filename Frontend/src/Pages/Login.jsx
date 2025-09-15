@@ -2,10 +2,14 @@ import axios from "axios";
 import { useForm } from "react-hook-form";
 import { Link, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
+import {useDispatch} from "react-redux"
+import { getCurrentUser } from "../redux/actions/userActions";
 
 const Login = () => {
   const { register, handleSubmit } = useForm();
   let navigate = useNavigate();
+
+  const dispatch = useDispatch();
 
   const loginHandler = (data) => {
     if (!data?.email?.trim() || !data?.password?.trim()) {
@@ -22,6 +26,9 @@ const Login = () => {
       toast.success("Login Successfully!", {
       position: "bottom-right",
     });
+
+     dispatch(getCurrentUser());
+
     navigate("/");
     }).
     catch(err=>{

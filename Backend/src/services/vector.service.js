@@ -1,11 +1,11 @@
 // Import the Pinecone library
-const { Pinecone } = require('@pinecone-database/pinecone')
+import { Pinecone } from '@pinecone-database/pinecone';
 
 const pc = new Pinecone({ apiKey: process.env.PINECONE_API_KEY });
 
 const chatMateIdx = pc.Index('chat-mate-project');
 
-async function createMemory({vectors, metadata, messageId}) {
+export async function createMemory({vectors, metadata, messageId}) {
     await chatMateIdx.upsert([
         {
             id: messageId,
@@ -15,7 +15,7 @@ async function createMemory({vectors, metadata, messageId}) {
     ])
 }
 
-async function queryMemory({queryVector, limit=5 ,metadata}) {
+export async function queryMemory({queryVector, limit=5 ,metadata}) {
     const data = await chatMateIdx.query({
         vector: queryVector,
         topK: limit,
@@ -25,4 +25,3 @@ async function queryMemory({queryVector, limit=5 ,metadata}) {
     return data.matches
 }
 
- module.exports = {createMemory, queryMemory}

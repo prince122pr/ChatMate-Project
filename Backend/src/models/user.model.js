@@ -1,6 +1,6 @@
-const mongoose = require('mongoose');
+import { Schema, model } from 'mongoose';
 
-let userSchema = new mongoose.Schema({
+let userSchema = new Schema({
     fullname:{
       firstname: {
          type: String,
@@ -21,6 +21,6 @@ let userSchema = new mongoose.Schema({
     }
 }, {timestamps: true});
 
-let userModel = mongoose.model("User", userSchema)
+let userModel = model("User", userSchema)
 
-module.exports = userModel;
+export default userModel;

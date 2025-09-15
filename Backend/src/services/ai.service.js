@@ -1,8 +1,10 @@
-const { GoogleGenAI } = require("@google/genai");
-require("dotenv").config()
+import { GoogleGenAI } from "@google/genai";
+import {config} from "dotenv"
+config();
+
 const ai = new GoogleGenAI({});
 
-async function generateResponse(content) {
+export async function generateResponse(content) {
   const response = await ai.models.generateContent({
     model: "gemini-2.0-flash",
     contents: content,
@@ -23,7 +25,7 @@ If user ask questions in hindi then tell respond in hindi. But if user ask quest
   return(response.text);
 }
 
-async function generateVector(content) {
+export async function generateVector(content) {
   const response = await ai.models.embedContent({
         model: 'gemini-embedding-001',
         contents: content,
@@ -34,5 +36,3 @@ async function generateVector(content) {
 
     return(response.embeddings[0].values);
 }
-
-module.exports = {generateResponse, generateVector};

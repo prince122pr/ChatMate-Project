@@ -1,13 +1,16 @@
 import { useForm } from "react-hook-form";
 import { Link, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
-import axios from "axios"
+import { createUser} from "../redux/actions/userActions";
+import {useDispatch} from "react-redux"
 
 const Register = () => {
   const { register, handleSubmit } = useForm();
   let navigate = useNavigate();
+  const dispatch = useDispatch()
 
-  const registerHandler = (user) => {
+  const registerHandler = async(user) => {
+
   if (
     !user?.firstName?.trim() ||
     !user?.lastName?.trim() ||
@@ -20,33 +23,24 @@ const Register = () => {
     return;
   }
 
-  axios.post("http://localhost:8000/api/auth/register", {
-    fullname: {
-      firstname: user.firstName,
-      lastname: user.lastName,
-    },
-    email: user.email,
-    password: user.password,
-  },{withCredentials: true})
-  .then((res) => {
-    console.log(res);
-    
-    toast.success("Registered Successfully!", {
+  try {
+       await dispatch(createUser(user))
+            toast.success("Registered Successfully!", {
       position: "bottom-right",
     });
     navigate("/login");
-  })
-  .catch((err) => {
+  } 
+  catch(err){
     toast.error(err?.response?.data?.message || "Registration Failed!", {
       position: "bottom-right",
     });
     console.error(err);
-  });
+  };
 };
 
 
   return (
-    <div className="w-full min-h-screen pt-32 pb-8 flex items-center justify-center px-2 sm:px-4 bg-gradient-to-br from-indigo-900 via-purple-900 to-blue-900">
+    <div className="w-full h-screen pt-32 flex items-center justify-center px-2 sm:px-4 bg-gradient-to-br from-indigo-900 via-purple-900 to-blue-900">
       <form
         onSubmit={handleSubmit(registerHandler)}
         className="w-full max-w-[98vw] sm:max-w-[600px] md:max-w-[700px] lg:max-w-[750px] bg-white/10 backdrop-blur-2xl border border-white/30 shadow-2xl text-white rounded-2xl sm:rounded-3xl px-4 sm:px-10 py-8 sm:py-12 flex flex-col gap-7 relative"

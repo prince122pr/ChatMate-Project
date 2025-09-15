@@ -1,12 +1,11 @@
-const { Server } = require("socket.io");  // Socket.IO server
-const cookie = require('cookie')   // To parse cookies from handshake
-const jwt = require("jsonwebtoken");
-const userModel = require("../models/user.model");
-const messageModel = require("../models/message.model");
-const { generateResponse, generateVector } = require("../services/ai.service");
-const { createMemory, queryMemory } = require("../services/vector.service");
+import { Server } from "socket.io";  // Socket.IO server
+import { parse } from 'cookie';   // To parse cookies from handshake
+import jwt from "jsonwebtoken";
+import userModel from "../models/user.model.js";
 
-const { v4: uuidv4 } = require('uuid');
+import { v4 as uuidv4 } from 'uuid';
+import { generateResponse, generateVector } from "../services/ai.service.js";
+import { createMemory, queryMemory } from "../services/vector.service.js";
 
 // Initialize Socket.IO server function
 function initSocketServer(httpServer){
@@ -17,7 +16,7 @@ function initSocketServer(httpServer){
     // Middleware to authenticate each incoming socket connection
     io.use(async(socket, next)=>{
       // Parse cookies from the handshake headers
-      const cookies = cookie.parse(socket.handshake.headers?.cookie || "");
+      const cookies = parse(socket.handshake.headers?.cookie || "");
 
       // Extract the token from cookies
       let { token } = cookies;
@@ -63,7 +62,7 @@ function initSocketServer(httpServer){
 */
        //save user data/message in mongodb and generate user
         let [msg, userVectors] = await Promise.all([
-           messageModel.create({
+           userModel.create({
         user: socket.user._id,
         chat: messagePayload.chatID,
         content: messagePayload.content,
@@ -115,7 +114,7 @@ const userMessageId = uuidv4()
            queryMemory({queryVector: userVectors, metadata: { user: String(socket.user._id), chat: String(messagePayload.chatID), content: messagePayload.content, role: "user" }
 }),
 
-     (messageModel.find({ chat: messagePayload.chatID }).sort({ createdAt: -1 }).limit(20).lean())
+     (find({ chat: messagePayload.chatID }).sort({ createdAt: -1 }).limit(20).lean())
       ]
                                                             )
 
@@ -157,7 +156,7 @@ await createMemory({
 
        // Generate AI response vector and save message in DB simultaneously
 let [saveinDB, modelVectors] = await Promise.all([
-  messageModel.create({
+  create({
     user: socket.user._id,
     chat: messagePayload.chatID,
     content: res,
@@ -193,4 +192,4 @@ await createMemory({
 
 }
 
-module.exports = initSocketServer
+export default initSocketServer

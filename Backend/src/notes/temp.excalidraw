@@ -9658,8 +9658,8 @@
     {
       "id": "yranzJFoebd3cB39O0L9J",
       "type": "rectangle",
-      "x": -959.4211925924476,
-      "y": 1429.49679035461,
+      "x": -952.1378183508289,
+      "y": 1429.497234896495,
       "width": 388.04791259765625,
       "height": 44.93261718750001,
       "angle": 0,
@@ -9677,8 +9677,8 @@
         "type": 3
       },
       "seed": 831427270,
-      "version": 895,
-      "versionNonce": 81755352,
+      "version": 949,
+      "versionNonce": 26774833,
       "isDeleted": false,
       "boundElements": [
         {
@@ -9686,15 +9686,15 @@
           "type": "text"
         }
       ],
-      "updated": 1756172430019,
+      "updated": 1757862904617,
       "link": null,
       "locked": false
     },
     {
       "id": "zSFeshiwajsglMcbvMj-W",
       "type": "text",
-      "x": -895.2170757711585,
-      "y": 1438.46309894836,
+      "x": -887.9337015295398,
+      "y": 1438.463543490245,
       "width": 259.6396789550781,
       "height": 27,
       "angle": 0,
@@ -9710,11 +9710,11 @@
       "index": "b2h",
       "roundness": null,
       "seed": 1358711302,
-      "version": 978,
-      "versionNonce": 1653219800,
+      "version": 1032,
+      "versionNonce": 1313980177,
       "isDeleted": false,
       "boundElements": [],
-      "updated": 1756172430019,
+      "updated": 1757862904617,
       "link": null,
       "locked": false,
       "text": "Get chat history from the DB",

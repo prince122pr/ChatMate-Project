@@ -1,17 +1,23 @@
-const app = require('./src/app');
-const connectDB = require('./src/db/db');
+import { createServer } from "http";
+import { config } from "dotenv";
 
-const httpServer = require("http").createServer(app);
-const initSocketServer = require('./src/sockets/socket.server');
+import app from "./src/app.js";
+import connectDB from "./src/db/db.js";
+import initSocketServer from "./src/sockets/socket.server.js";
 
-require('dotenv').config();
+config(); // load env variables
 
+// Create HTTP server
+const server = createServer(app);
+
+// Connect DB
 connectDB();
 
-initSocketServer(httpServer);
+// Init socket server
+initSocketServer(server);
 
-let port = process.env.PORT || 3000;
+const port = process.env.PORT || 3000;
 
-httpServer.listen(port, ()=>{
-    console.log(`Server is running on the port ${port}`);
-})
+server.listen(port, () => {
+  console.log(`🚀 Server is running on port ${port}`);
+});
