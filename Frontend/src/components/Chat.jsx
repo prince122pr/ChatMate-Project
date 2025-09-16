@@ -15,7 +15,7 @@ const Chat = ({
       <div className="px-4 py-3 border-b border-white/10 bg-black/30 flex items-center gap-2">
         <FaRobot className="text-green-300" />
         <span className="text-white font-semibold text-base sm:text-lg truncate">
-          {chats.find((c) => c.id === selectedChat)?.title || "New Chat"}
+          {chats?.find((c) => c.id === selectedChat)?.title || "New Chat"}
         </span>
       </div>
       {/* Messages */}

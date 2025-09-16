@@ -12,3 +12,13 @@ export const getAllUserChats = () => async (dispatch) => {
      dispatch(setAllChats([]))
    }
 }
+
+export const createNewChat = (title) => async (dispatch) => {
+    try {
+        await API.post('/chat/create-chat', {title});
+        dispatch(getAllUserChats());
+    } catch (error) {
+        console.log(error);
+        
+    }
+}

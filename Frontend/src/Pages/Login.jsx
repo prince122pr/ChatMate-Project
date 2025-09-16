@@ -22,7 +22,7 @@ const Login = () => {
     axios.post("http://localhost:8000/api/auth/login",{
       "email": data.email,
       "password": data.password
-    },{withCredentials: true}).then(res=>{console.log(res)
+    },{withCredentials: true}).then(()=>{
       toast.success("Login Successfully!", {
       position: "bottom-right",
     });

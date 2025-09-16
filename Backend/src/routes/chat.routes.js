@@ -1,10 +1,12 @@
 import { Router } from "express";
-import { createChat, getAllUserChats } from "../controllers/chat.controller.js";
+import { createChat, getAllUserChats, getChatMessages } from "../controllers/chat.controller.js";
 import isAuth from "../middlewares/auth.middleware.js";
 
 const chatRouter = Router();
 
-chatRouter.post("/", isAuth, createChat);
+chatRouter.post("/create-chat", isAuth, createChat);
 chatRouter.get("/getAllUserChats", isAuth, getAllUserChats)
+
+chatRouter.get('/getChatMessages/:chatId',isAuth, getChatMessages)
 
 export default chatRouter;

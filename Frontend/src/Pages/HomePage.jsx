@@ -1,22 +1,48 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { FiPlus } from "react-icons/fi";
 import { FaRobot } from "react-icons/fa";
 import Chat from "../components/Chat";
-
+import { useDispatch, useSelector } from "react-redux";
+import { createNewChat, getAllUserChats } from "../redux/actions/chatActions";
+import {toast} from "react-toastify"
+import { getChatMessages } from "../redux/actions/messageActions";
 
 const HomePage = () => {
-  const [chats, setChats] = useState([]);
-  const [selectedChat, setSelectedChat] = useState();
+  const dispatch = useDispatch();
+  const user = useSelector((store) => store.user.userData);
+  const allChats = useSelector((store) => store.chats.allUserChats);
+
+  useEffect(() => {
+    if (user) dispatch(getAllUserChats());
+  }, [dispatch, user]);
+
+  const [selectedChat, setSelectedChat] = useState("");
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
 
-  const handleNewChat = () => {
-    const newId = Date.now();
-    const newChat = { id: newId, title: `New Chat ${chats.length + 1}` };
-    setChats([newChat, ...chats]);
-    setSelectedChat(newId);
-    setMessages([]);
+  const handleNewChat = async() => {
+     const title = prompt("Enter chat title:");
+  if (!title) return;
+
+    try {
+    // Dispatch Redux action instead of local push
+    await dispatch(createNewChat(title));
+    toast.success("New Chat Created")
+    } catch (error) {
+       console.log(error);
+      toast.error("New Chat Creation Failed!")
+    }
   };
+
+  const handleSelectedChat = async(chatId) => {
+    try {
+      setSelectedChat(chatId)
+      await dispatch(getChatMessages(chatId));
+    } catch (error) {
+      console.log(error);
+      
+    }
+  }
 
   const handleSend = (e) => {
     e.preventDefault();
@@ -26,7 +52,7 @@ const HomePage = () => {
       { id: Date.now(), role: "user", content: input },
     ]);
     setInput("");
-    // Here you would call your AI backend and append the AI response to messages
+    // TODO: send message to backend / socket
   };
 
   return (
@@ -38,24 +64,24 @@ const HomePage = () => {
             Chats
           </span>
           <button
-            className="flex items-center justify-center w-10 h-10 rounded-lg bg-gradient-to-tr from-green-400 via-blue-500 to-purple-600 text-white hover:scale-105 transition"
+            className="cursor-pointer flex items-center justify-center w-10 h-10 rounded-lg bg-gradient-to-tr from-green-400 via-blue-500 to-purple-600 text-white hover:scale-105 transition"
             onClick={handleNewChat}
             title="New Chat"
           >
             <FiPlus size={22} />
           </button>
         </div>
-        <nav className="flex-1 overflow-y-auto py-2">
-          {chats.map((chat) => (
+        <nav className="flex-1 overflow-y-auto py-2 ">
+          {allChats?.map((chat) => (
             <button
-              key={chat.id}
-              className={`w-full flex items-center gap-2 px-2 sm:px-4 py-3 text-left text-white rounded-lg transition 
+              key={chat._id}
+              className={`cursor-pointer w-full flex items-center gap-2 px-2 sm:px-4 py-3 text-left text-white rounded-lg transition 
                 ${
-                  selectedChat === chat.id
+                  selectedChat === chat._id
                     ? "bg-white/20 font-semibold"
                     : "hover:bg-white/10"
                 }`}
-              onClick={() => setSelectedChat(chat.id)}
+              onClick={()=>handleSelectedChat(chat._id)}
             >
               <FaRobot className="text-green-300" />
               <span className="hidden sm:inline truncate">{chat.title}</span>
@@ -72,7 +98,7 @@ const HomePage = () => {
           input={input}
           setInput={setInput}
           handleSend={handleSend}
-          chats={chats}
+          chats={allChats}
         />
       </main>
     </div>
