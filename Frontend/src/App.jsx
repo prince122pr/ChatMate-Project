@@ -4,6 +4,7 @@ import MainRoutes from "./Routes/MainRoutes"
 import { getCurrentUser } from "./redux/actions/userActions"
 import { useDispatch, useSelector } from "react-redux"
 import { useLocation } from "react-router-dom";
+import { getAllUserChats } from "./redux/actions/chatActions"
 
 
 const App = () => {
@@ -15,6 +16,10 @@ const App = () => {
     useEffect(() => {
     if(!isPublicRoute && !user) {dispatch(getCurrentUser())}
   },[dispatch, user, isPublicRoute])
+
+  useEffect(()=>{
+    if(user) dispatch(getAllUserChats()) 
+  },[dispatch, user])
   
   return (
     <div className="w-full min-h-screen">

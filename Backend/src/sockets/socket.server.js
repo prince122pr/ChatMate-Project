@@ -6,6 +6,7 @@ import userModel from "../models/user.model.js";
 import { v4 as uuidv4 } from 'uuid';
 import { generateResponse, generateVector } from "../services/ai.service.js";
 import { createMemory, queryMemory } from "../services/vector.service.js";
+import messageModel from "../models/message.model.js";
 
 // Initialize Socket.IO server function
 function initSocketServer(httpServer){
@@ -62,7 +63,7 @@ function initSocketServer(httpServer){
 */
        //save user data/message in mongodb and generate user
         let [msg, userVectors] = await Promise.all([
-           userModel.create({
+           messageModel.create({
         user: socket.user._id,
         chat: messagePayload.chatID,
         content: messagePayload.content,
@@ -114,7 +115,7 @@ const userMessageId = uuidv4()
            queryMemory({queryVector: userVectors, metadata: { user: String(socket.user._id), chat: String(messagePayload.chatID), content: messagePayload.content, role: "user" }
 }),
 
-     (find({ chat: messagePayload.chatID }).sort({ createdAt: -1 }).limit(20).lean())
+     (messageModel.find({ chat: messagePayload.chatID }).sort({ createdAt: -1 }).limit(20).lean())
       ]
                                                             )
 
@@ -156,7 +157,7 @@ await createMemory({
 
        // Generate AI response vector and save message in DB simultaneously
 let [saveinDB, modelVectors] = await Promise.all([
-  create({
+  messageModel.create({
     user: socket.user._id,
     chat: messagePayload.chatID,
     content: res,

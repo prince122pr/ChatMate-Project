@@ -1,11 +1,5 @@
-import axios from "axios";
+import { API } from "../../axios/axios";
 import { setUserData } from "../slices/userSlice";
-
-// Axios instance (optional but cleaner if you reuse baseURL everywhere)
-const API = axios.create({
-  baseURL: "http://localhost:8000/api",
-  withCredentials: true,
-});
 
 // Get current user
 export const getCurrentUser = () => async (dispatch) => {
