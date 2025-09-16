@@ -39,27 +39,45 @@ export async function createChat(req, res){
 }
 
 
-export async function getChatMessages(req, res){
+export async function getChatMessages(req, res) {
     try {
-        const {chatId} = req.params;     
-        const { page = 1, limit = 10 } = req.query;  // pagination from query string
+        const { chatId } = req.params;
+        const { page = 1, limit = 10 } = req.query;
 
+        const chatMessages = await messageModel
+            .find({ chat: chatId })
+            .sort({ createdAt: -1 })
+            .skip((page - 1) * Number(limit))
+            .limit(Number(limit));
 
-         const chatMessages = await messageModel
-      .find({ chat: chatId })
-      .sort({ createdAt: -1 })  // newest first
-      .skip((page - 1) * limit) // skip older ones
-      .limit(parseInt(limit));  // fetch only "limit" messages
-
-        if(!chatMessages) return res.status(400).json({message:"Chat messages not found!"})
-
-        return res.status(201).json({
-            message: "Chat messages fetched successfully!",
-            chatMessages: chatMessages.reverse(), // return oldest → newest order
-            });
+        return res.status(200).json({
+            message: chatMessages.length ? "Chat messages fetched successfully!" : "No messages yet",
+            chatMessages: chatMessages.reverse(), // oldest → newest
+        });
 
     } catch (error) {
-        console.log(error);
-         return res.status(500).json({ message: "Chat messages not fetched!"});
+        console.error(error);
+        return res.status(500).json({ message: "Chat messages not fetched!" });
+    }
+}
+
+export async function sendMessage (req, res){
+    try {
+        const { chatId, content, role, user } = req.body;
+        const message = await messageModel.create({
+      chat: chatId,
+      content,
+      role,
+      user
+    });
+
+     return res.status(201).json({
+      message: "Message sent successfully!",
+      chatMessage: message,
+    });
+
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ message: "Chat message response error!" });
     }
 }

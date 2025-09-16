@@ -11,8 +11,13 @@ import messageModel from "../models/message.model.js";
 // Initialize Socket.IO server function
 function initSocketServer(httpServer){
 
+
   // Create a new Socket.IO server instance attached to httpServer
-    const io = new Server(httpServer, { /* options */ });
+    const io = new Server(httpServer, {  cors: {
+      origin: "http://localhost:5173", // your frontend URL
+      methods: ["GET", "POST"],
+      credentials: true, 
+    }, });
 
     // Middleware to authenticate each incoming socket connection
     io.use(async(socket, next)=>{

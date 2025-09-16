@@ -42,7 +42,7 @@ const Login = () => {
   };
 
   return (
-    <div className="w-full h-screen flex items-center justify-center pt-24 px-2 sm:px-4 bg-gradient-to-br from-indigo-900 via-purple-900 to-blue-900">
+    <div className="w-full h-screen flex items-center justify-center px-2 sm:px-4 bg-gradient-to-br from-indigo-900 via-purple-900 to-blue-900">
       <form
         onSubmit={handleSubmit(loginHandler)}
         className="w-full max-w-[98vw] sm:max-w-[400px] md:max-w-[480px] lg:max-w-[520px] xl:max-w-[600px] bg-white/10 backdrop-blur-2xl border border-white/30 shadow-2xl text-white rounded-2xl sm:rounded-3xl px-4 sm:px-10 py-8 sm:py-12 flex flex-col gap-7 relative"

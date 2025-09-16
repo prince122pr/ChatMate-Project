@@ -6,6 +6,8 @@ import { useDispatch, useSelector } from "react-redux";
 import { createNewChat, getAllUserChats } from "../redux/actions/chatActions";
 import {toast} from "react-toastify"
 import { getChatMessages } from "../redux/actions/messageActions";
+import { API } from "../axios/axios";
+import { socket } from "../socket/socket";
 
 const HomePage = () => {
   const dispatch = useDispatch();
@@ -37,22 +39,49 @@ const HomePage = () => {
   const handleSelectedChat = async(chatId) => {
     try {
       setSelectedChat(chatId)
-      await dispatch(getChatMessages(chatId));
+      let res = await dispatch(getChatMessages(chatId));
+      setMessages(res)
     } catch (error) {
       console.log(error);
-      
+      setMessages([])
     }
   }
 
-  const handleSend = (e) => {
-    e.preventDefault();
+  const handleSend = async(chatId) => {
     if (!input.trim()) return;
-    setMessages([
-      ...messages,
-      { id: Date.now(), role: "user", content: input },
-    ]);
+
+    const newMessage = {
+    content: input,
+    role: "user",
+    chat: chatId,
+    user: user._id,
+     _id: Date.now(), // temporary ID for UI
+  };
     setInput("");
-    // TODO: send message to backend / socket
+    setMessages([...messages, newMessage]); // show immediately
+    //send message to backend / socket  
+    try {
+         const res = await API.post("/chat/sendMessage", {
+      content: input,
+      role: "user",
+      chat: chatId,
+      user: user._id,
+    });
+
+     const savedMessage = res.data.chatMessage;
+
+      // Replace temporary message with saved message
+    setMessages((prev) =>
+      prev.map((msg) => (msg._id === newMessage._id ? savedMessage : msg))
+    );
+
+    // Send message to backend
+  socket.emit("ai-message", { chatID: chatId, content: newMessage.content, tempId: newMessage._id });
+
+    } catch (error) {
+       console.error(error);
+    }
+    
   };
 
   return (
@@ -71,7 +100,7 @@ const HomePage = () => {
             <FiPlus size={22} />
           </button>
         </div>
-        <nav className="flex-1 overflow-y-auto py-2 ">
+        <nav className="overflow-y-auto py-2 flex flex-col-reverse ">
           {allChats?.map((chat) => (
             <button
               key={chat._id}
@@ -95,6 +124,7 @@ const HomePage = () => {
         <Chat
           selectedChat={selectedChat}
           messages={messages}
+          setMessages={setMessages}
           input={input}
           setInput={setInput}
           handleSend={handleSend}
